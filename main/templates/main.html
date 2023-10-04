@@ -44,6 +44,7 @@
 
     <h5>Class:</h5>
     <p>{{class}}</p>
+<table></table>
 <table id="product_table">
     <tr>
         <th>Name</th>
@@ -120,42 +121,48 @@
 
 <script>
   async function getProducts() {
-      return fetch("{% url 'main:get_product_json' %}").then((res) => res.json())
+        return fetch("{% url 'main:get_product_json' %}").then((res) => res.json())
   }
-
   async function refreshProducts() {
-        document.getElementById("product_table").innerHTML = ""
-        const products = await getProducts()
-        let htmlString = `<tr>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th>Date Added</th>
-        </tr>`
-        products.forEach((item) => {
-            htmlString += `\n<tr>
-            <td>${item.fields.name}</td>
-            <td>${item.fields.price}</td>
-            <td>${item.fields.description}</td>
-            <td>${item.fields.date_added}</td>
-        </tr>` 
-        })
-        
-        document.getElementById("product_table").innerHTML = htmlString
-    }
+      document.getElementById("product_table").innerHTML = ""
+      const products = await getProducts()
+      let htmlString = `<tr>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Description</th>
+          <th>Date Added</th>
+          <th>Edit</th>
+          <th>Delete</th>
+          </tr>`
+          products.forEach((item) => {
+              htmlString += `
+              <tr>
+                  <td>${item.fields.name}</td>
+                  <td>${item.fields.price}</td>
+                  <td>${item.fields.description}</td>
+                  <td>${item.fields.date_added}</td>
+                  <td>
+                      <button class="btn btn-primary" onclick="editProduct(${item.pk})">Edit</button>
+                  </td>
+                  <td>
+                      <button class="btn btn-danger" onclick="deleteProduct(${item.pk})">Delete</button>
+                  </td>
+              </tr>`
+          });
+      
+      document.getElementById("product_table").innerHTML = htmlString
+  }
+  refreshProducts()
+  function addProduct() {
+      fetch("{% url 'main:add_product_ajax' %}", {
+          method: "POST",
+          body: new FormData(document.querySelector('#form'))
+      }).then(refreshProducts)
 
-    refreshProducts()
-
-    function addProduct() {
-        fetch("{% url 'main:add_product_ajax' %}", {
-            method: "POST",
-            body: new FormData(document.querySelector('#form'))
-        }).then(refreshProducts)
-
-        document.getElementById("form").reset()
-        return false
-    }
-
-    document.getElementById("button_add").onclick = addProduct
+      document.getElementById("form").reset()
+      return false
+  }
+  document.getElementById("button_add").onclick = addProduct
+    
 </script>
 {% endblock content %}
